@@ -47,21 +47,34 @@
     },
     {
       "parameters": {
+        "jsCode": "const websiteUrl = 'https://example.com';\nconst items = $input.all();\n\nif (items.length === 0) {\n  return [{\n    json: {\n      websiteUrl,\n      statusCode: 0,\n      isUp: false,\n      statusText: 'No response from server'\n    }\n  }];\n}\n\nconst item = items[0].json;\nconst rawStatus = item.statusCode ?? item.status ?? item.response?.statusCode ?? 0;\nconst statusCode = Number(rawStatus) || 0;\nconst isUp = statusCode === 200;\n\nreturn [{\n  json: {\n    websiteUrl,\n    statusCode,\n    isUp,\n    statusText: isUp ? 'Website is ok' : 'Website is down',\n    error: item.error?.message || item.error || null\n  }\n}];"
+      },
+      "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567899",
+      "name": "Normalize Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict",
+            "typeValidation": "loose",
             "version": 2
           },
           "conditions": [
             {
-              "id": "status-is-200",
-              "leftValue": "={{ $json.statusCode }}",
-              "rightValue": 200,
+              "id": "status-is-up",
+              "leftValue": "={{ $json.isUp }}",
+              "rightValue": true,
               "operator": {
-                "type": "number",
-                "operation": "equals"
+                "type": "boolean",
+                "operation": "true"
               }
             }
           ],
@@ -74,7 +87,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        680,
+        900,
         300
       ]
     },
@@ -83,9 +96,9 @@
         "resource": "message",
         "operation": "send",
         "sendTo": "muhammadumersheraz@gmail.com",
-        "subject": "=Website Monitor: {{ $json.statusCode || 'No Response' }} - OK",
+        "subject": "=Website Monitor: {{ $json.statusCode }} - OK",
         "emailType": "text",
-        "message": "=Website: https://example.com\nStatus Code: {{ $json.statusCode }}\n\nWebsite is ok",
+        "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode }}\n\n{{ $json.statusText }}",
         "options": {}
       },
       "id": "d4e5f6a7-b8c9-0123-def0-234567890123",
@@ -93,7 +106,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        920,
+        1140,
         180
       ],
       "credentials": {
@@ -110,7 +123,7 @@
         "sendTo": "muhammadumersheraz@gmail.com",
         "subject": "=Website Monitor: {{ $json.statusCode || 'DOWN' }} - Alert",
         "emailType": "text",
-        "message": "=Website: https://example.com\nStatus Code: {{ $json.statusCode || 'No response / connection failed' }}\n\nWebsite is down",
+        "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode || 'No response' }}\nError: {{ $json.error || 'Site unreachable or non-200 response' }}\n\n{{ $json.statusText }}",
         "options": {}
       },
       "id": "e5f6a7b8-c9d0-1234-ef01-345678901234",
@@ -118,7 +131,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        920,
+        1140,
         420
       ],
       "credentials": {
@@ -142,6 +155,17 @@
       ]
     },
     "Check Website": {
+      "main": [
+        [
+          {
+            "node": "Normalize Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Status": {
       "main": [
         [
           {
@@ -175,7 +199,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f6a7b8c9-d0e1-2345-f012-456789012345",
+  "versionId": "f6a7b8c9-d0e1-2345-f012-456789012346",
   "meta": {
     "templateCredsSetupCompleted": false
   },
