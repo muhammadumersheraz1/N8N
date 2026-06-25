@@ -122,7 +122,9 @@
         "subject": "={{ $json.websiteName }}: {{ $json.statusCode }} - OK",
         "emailType": "text",
         "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode }}\n\n{{ $json.statusText }}",
-        "options": {}
+        "options": {
+          "appendAttribution": false
+        }
       },
       "id": "d4e5f6a7-b8c9-0123-def0-234567890123",
       "name": "Gmail - Website OK",
@@ -147,7 +149,9 @@
         "subject": "={{ $json.websiteName }}: {{ $json.statusCode || 'DOWN' }} - Alert",
         "emailType": "text",
         "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode || 'No response / connection failed' }}\n\n{{ $json.statusText }}",
-        "options": {}
+        "options": {
+          "appendAttribution": false
+        }
       },
       "id": "e5f6a7b8-c9d0-1234-ef01-345678901234",
       "name": "Gmail - Website Down",

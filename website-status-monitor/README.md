@@ -60,7 +60,25 @@ All other nodes use this value dynamically — no need to edit Check Website, No
 3. Click **Sign in with Google** and authorize your account
 4. Use the same credential on both Gmail nodes
 
-### 3. Activate
+### 3. Remove n8n email footer
+
+n8n adds this to every email by default:
+
+```
+This email was sent automatically with n8n
+https://n8n.io
+```
+
+To remove it on **both Gmail nodes**:
+
+1. Open **Gmail - Website OK** (and **Gmail - Website Down**)
+2. Click **Add option**
+3. Select **Append n8n Attribution**
+4. Turn the toggle **OFF**
+
+The imported `workflow.json` already has this disabled.
+
+### 4. Activate
 
 Toggle the workflow to **Active** in the top-right corner.
 
