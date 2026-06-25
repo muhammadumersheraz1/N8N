@@ -7,9 +7,9 @@ n8n workflow that checks a website every **5 minutes** and sends a Gmail alert b
 ![Workflow diagram](./workflow-diagram.png)
 
 ```
-Every 5 Minutes → Check Website → Normalize Status → Status Code 200?
-                                                          ├─ Yes → Gmail: Website is ok
-                                                          └─ No  → Gmail: Website is down
+Every 5 Minutes → Set Website URL → Check Website → Normalize Status → Status Code 200?
+                                                                          ├─ Yes → Gmail: Website is ok
+                                                                          └─ No  → Gmail: Website is down
 ```
 
 ## What it does
@@ -17,11 +17,12 @@ Every 5 Minutes → Check Website → Normalize Status → Status Code 200?
 | Step | Node | Description |
 |------|------|-------------|
 | 1 | **Every 5 Minutes** | Schedule trigger — runs every 5 minutes |
-| 2 | **Check Website** | Sends HTTP GET request to your website |
-| 3 | **Normalize Status** | Ensures every run produces one item with `statusCode` and `isUp` |
-| 4 | **Status Code 200?** | Routes to OK or DOWN branch based on `isUp` |
-| 5 | **Gmail - Website OK** | Sends email: *"Website is ok"* |
-| 6 | **Gmail - Website Down** | Sends email: *"Website is down"* |
+| 2 | **Set Website URL** | Sets the website URL once (change only here) |
+| 3 | **Check Website** | Sends HTTP GET to `{{ $json.websiteUrl }}` |
+| 4 | **Normalize Status** | Builds dynamic `websiteUrl`, `websiteName`, `statusCode`, `isUp` |
+| 5 | **Status Code 200?** | Routes to OK or DOWN branch based on `isUp` |
+| 6 | **Gmail - Website OK** | Sends email: *"Website is ok"* |
+| 7 | **Gmail - Website Down** | Sends email: *"Website is down"* |
 
 **Recipient:** `muhammadumersheraz@gmail.com`
 
@@ -42,15 +43,15 @@ Every 5 Minutes → Check Website → Normalize Status → Status Code 200?
 
 ## Configuration
 
-### 1. Website URL
+### 1. Website URL (change in ONE place only)
 
-In the **Check Website** node, replace:
+Open the **Set Website URL** node and update:
 
 ```
-https://example.com
+https://dubaibiglottery.com/
 ```
 
-with your actual website URL. Also update the URL in both Gmail message bodies.
+All other nodes use this value dynamically — no need to edit Check Website, Normalize Status, or Gmail nodes.
 
 ### 2. Gmail credentials
 
@@ -67,7 +68,7 @@ Toggle the workflow to **Active** in the top-right corner.
 
 **When status is 200:**
 ```
-Website: https://example.com
+Website: https://dubaibiglottery.com/
 Status Code: 200
 
 Website is ok
@@ -75,7 +76,7 @@ Website is ok
 
 **When status is not 200 or site is unreachable:**
 ```
-Website: https://example.com
+Website: https://dubaibiglottery.com/
 Status Code: No response / connection failed
 
 Website is down
@@ -97,7 +98,7 @@ This is **normal** when the website returns status `200`. Only **one** Gmail nod
 | Status `200` | Gmail - Website OK |
 | Any other status or no response | Gmail - Website Down |
 
-To test the DOWN branch, temporarily change the URL in **Check Website** and **Normalize Status** to:
+To test the DOWN branch, temporarily change the URL in **Set Website URL** to:
 
 ```
 https://httpstat.us/503
@@ -113,4 +114,4 @@ Do not click **Execute step** on only the Gmail node. Always run from **Every 5 
 
 - Emails are sent **every 5 minutes** regardless of status (OK or DOWN).
 - To alert only when the site goes down, add a filter or memory node before the Gmail nodes.
-- Default website URL is `https://example.com` — change it in both **Check Website** and **Normalize Status** before activating.
+- Default website URL is `https://dubaibiglottery.com/` — change it only in **Set Website URL**.

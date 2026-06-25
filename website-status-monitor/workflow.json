@@ -23,8 +23,31 @@
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "website-url",
+              "name": "websiteUrl",
+              "value": "https://dubaibiglottery.com/",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a9b8c7d6-e5f4-3210-abcd-ef9876543210",
+      "name": "Set Website URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
         "method": "GET",
-        "url": "https://example.com",
+        "url": "={{ $json.websiteUrl }}",
         "options": {
           "response": {
             "response": {
@@ -40,21 +63,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        460,
+        680,
         300
       ],
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const websiteUrl = 'https://example.com';\nconst items = $input.all();\n\nif (items.length === 0) {\n  return [{\n    json: {\n      websiteUrl,\n      statusCode: 0,\n      isUp: false,\n      statusText: 'No response from server'\n    }\n  }];\n}\n\nconst item = items[0].json;\nconst rawStatus = item.statusCode ?? item.status ?? item.response?.statusCode ?? 0;\nconst statusCode = Number(rawStatus) || 0;\nconst isUp = statusCode === 200;\n\nreturn [{\n  json: {\n    websiteUrl,\n    statusCode,\n    isUp,\n    statusText: isUp ? 'Website is ok' : 'Website is down',\n    error: item.error?.message || item.error || null\n  }\n}];"
+        "jsCode": "const config = $('Set Website URL').first().json;\nconst websiteUrl = config.websiteUrl;\nlet websiteName = websiteUrl;\n\ntry {\n  websiteName = new URL(websiteUrl).hostname;\n} catch {}\n\nconst items = $input.all();\n\nif (items.length === 0) {\n  return [{\n    json: {\n      websiteUrl,\n      websiteName,\n      statusCode: 0,\n      isUp: false,\n      statusText: 'Website is down',\n      error: 'No response from server'\n    }\n  }];\n}\n\nconst item = items[0].json;\nconst rawStatus = item.statusCode ?? item.status ?? item.response?.statusCode ?? 0;\nconst statusCode = Number(rawStatus) || 0;\nconst isUp = statusCode === 200;\n\nreturn [{\n  json: {\n    websiteUrl,\n    websiteName,\n    statusCode,\n    isUp,\n    statusText: isUp ? 'Website is ok' : 'Website is down',\n    error: item.error?.message || item.error || null\n  }\n}];"
       },
       "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567899",
       "name": "Normalize Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        680,
+        900,
         300
       ]
     },
@@ -87,7 +110,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        900,
+        1120,
         300
       ]
     },
@@ -96,7 +119,7 @@
         "resource": "message",
         "operation": "send",
         "sendTo": "muhammadumersheraz@gmail.com",
-        "subject": "=Website Monitor: {{ $json.statusCode }} - OK",
+        "subject": "={{ $json.websiteName }}: {{ $json.statusCode }} - OK",
         "emailType": "text",
         "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode }}\n\n{{ $json.statusText }}",
         "options": {}
@@ -106,7 +129,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1140,
+        1360,
         180
       ],
       "credentials": {
@@ -121,9 +144,9 @@
         "resource": "message",
         "operation": "send",
         "sendTo": "muhammadumersheraz@gmail.com",
-        "subject": "=Website Monitor: {{ $json.statusCode || 'DOWN' }} - Alert",
+        "subject": "={{ $json.websiteName }}: {{ $json.statusCode || 'DOWN' }} - Alert",
         "emailType": "text",
-        "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode || 'No response' }}\nError: {{ $json.error || 'Site unreachable or non-200 response' }}\n\n{{ $json.statusText }}",
+        "message": "=Website: {{ $json.websiteUrl }}\nStatus Code: {{ $json.statusCode || 'No response / connection failed' }}\n\n{{ $json.statusText }}",
         "options": {}
       },
       "id": "e5f6a7b8-c9d0-1234-ef01-345678901234",
@@ -131,7 +154,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1140,
+        1360,
         420
       ],
       "credentials": {
@@ -144,6 +167,17 @@
   ],
   "connections": {
     "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Set Website URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Website URL": {
       "main": [
         [
           {
@@ -199,7 +233,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f6a7b8c9-d0e1-2345-f012-456789012346",
+  "versionId": "f6a7b8c9-d0e1-2345-f012-456789012347",
   "meta": {
     "templateCredsSetupCompleted": false
   },
